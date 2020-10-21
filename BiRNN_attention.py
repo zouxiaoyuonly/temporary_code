@@ -1,5 +1,4 @@
 #-*- coding:utf-8 -*-
-糖糖糖糖他他他
 import tensorflow as tf
 import numpy as np
 
@@ -7,7 +6,7 @@ class BiRNN(object):
 	"""
 	用于文本分类的双向RNN
 	"""
-	def __init__(self, embedding_size, rnn_size, layer_size, 
+	def __init__(self, embedding_size, rnn_size, layer_size,
 		vocab_size, attn_size, sequence_length, n_classes, grad_clip, learning_rate):
 
 		self.output_keep_prob = tf.placeholder(tf.float32, name='output_keep_prob')
@@ -49,7 +48,7 @@ class BiRNN(object):
 
 		print(len(outputs))
 
-		# 定义attention layer 
+		# 定义attention layer
 		attention_size = attn_size
 		with tf.name_scope('attention'), tf.variable_scope('attention'):
 			attention_w = tf.Variable(tf.truncated_normal([2*rnn_size, attention_size], stddev=0.1), name='attention_w')
@@ -57,7 +56,7 @@ class BiRNN(object):
 			attention_b = tf.Variable(tf.constant(0.1, shape=[attention_size]), name='attention_b')
 			u_list = []
 			for t in range(sequence_length):
-				u_t = tf.tanh(tf.matmul(outputs[t], attention_w) + attention_b) 
+				u_t = tf.tanh(tf.matmul(outputs[t], attention_w) + attention_b)
 				u_list.append(u_t)
 
 			u_w = tf.Variable(tf.truncated_normal([attention_size, 1], stddev=0.1), name='attention_uw')
@@ -65,13 +64,13 @@ class BiRNN(object):
 			for t in range(sequence_length):
 				z_t = tf.matmul(u_list[t], u_w)
 				attn_z.append(z_t)
-				
+
 			attn_zconcat = tf.concat(attn_z, axis=1)
 			self.alpha = tf.nn.softmax(attn_zconcat)
 			print(self.alpha)
 			alpha_trans = tf.reshape(tf.transpose(self.alpha, [1,0]), [sequence_length, -1, 1])
 
-			
+
 			self.final_output = tf.reduce_sum(outputs * alpha_trans, 0)
 
 		#print(self.final_output.shape)
